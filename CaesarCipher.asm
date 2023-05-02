@@ -31,7 +31,8 @@ encryptinput: .asciiz "\nEnter the message to encrypt (100 char max): "
 encryptoutput: .asciiz "\nMessage has been encrypted: "
 decryptinput: .asciiz "\nEnter the message to decrypt (100 char max): "
 decryptoutput: .asciiz "\nMessage has been decrypted: "
-shiftAmount: .byte 3
+keyask: .asciiz "\nPlease enter a number for the shift key: "
+#shiftAmount: .byte 3		#no longer used
 inputBuffer: .space 101
 
 .text
@@ -82,9 +83,19 @@ encrypt:
     	li $a1, 100		#read 100 chars max
    	syscall
     
+    	# Ask for shift key
+    	li $v0, 4
+    	la $a0, keyask
+    	syscall
+    	
+    	# Get user key input, store in $t1
+    	li $v0, 5		#get user int input
+    	syscall
+    	move $t1, $v0
+    
     	# Encrypt the message
     	la $t0, inputBuffer 	# Load address of result into $t0
-    	lb $t1, shiftAmount    	# Load the shift amount nto $t1
+    	#lb $t1, shiftAmount    	# Load the shift amount nto $t1, no longer used
     	
     	j encrypt_loop
     
@@ -110,9 +121,19 @@ decrypt:
     	li $a1, 100		#read 100 chars max
    	syscall
     
+    	# Ask for shift key
+    	li $v0, 4
+    	la $a0, keyask
+    	syscall
+    	
+    	# Get user key input, store in $t1
+    	li $v0, 5		#get user int input
+    	syscall
+    	move $t1, $v0
+    
     	# Encrypt the message
     	la $t0, inputBuffer 	# Load address of result into $t0
-    	lb $t1, shiftAmount    	# Load the shift amount nto $t1
+    	#lb $t1, shiftAmount    	# Load the shift amount nto $t1, no longer used
     	
     	j decrypt_loop
     
@@ -127,11 +148,11 @@ decrypt_loop:
     	j decrypt_loop
     
 print_result:
-    # Print the encrypted/decrypted message
-    li $v0, 4
-    la $a0, inputBuffer
-    syscall
-    j end
+    	# Print the encrypted/decrypted message
+    	li $v0, 4
+    	la $a0, inputBuffer
+    	syscall
+    	j end
     
 end:
 	exit
