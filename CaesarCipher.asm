@@ -103,7 +103,7 @@ encrypt_loop:
     	lb $t2, ($t0)   # Load the current character into $t2
     	beq $t2, $zero, print_result  # If end of string is reached, print result
     
-    	addu $t2, $t2, $t1  # Add the key to the character (shifts it)
+    	subu $t2, $t2, $t1  # Add the key to the character (shifts it)
     
     	sb $t2, ($t0)   # Store the encrypted character back into result
     	addi $t0, $t0, 1   # Increment address to the next character
@@ -141,7 +141,7 @@ decrypt_loop:
     	lb $t2, ($t0)   # Load the current character into $t2
     	beq $t2, $zero, print_result  # If end of string is reached, print result
     
-    	subu $t2, $t2, $t1  # Add the key to the character (shifts it)
+    	addu $t2, $t2, $t1  # Add the key to the character (shifts it)
     
     	sb $t2, ($t0)   # Store the encrypted character back into result
     	addi $t0, $t0, 1   # Increment address to the next character
