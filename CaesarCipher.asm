@@ -24,8 +24,9 @@
 .end_macro
 
 .data
-menu: .asciiz "\nWelcome to the AHHHHHsembly Caesar Cipher!\nPlease select an option:\n1) - Encrypt\n2) - Decrypt\n3) - Quit"
-instruction: .asciiz "\nPlease enter a number 1-3 to select an option: "
+welcomeMsg: .asciiz "\nWelcome to the AHHHHHsembly Caesar Cipher!"
+menu: .asciiz "\nPlease select an option:\n1) - Encrypt\n2) - Decrypt\n3) - Quit"
+instruction: .asciiz "\n\nPlease enter a number 1-3 to select an option: "
 invalidInput: .asciiz "\nInvalid input! Please enter a number 1-3"
 encryptinput: .asciiz "\nEnter the message to encrypt (100 char max): "
 encryptoutput: .asciiz "\nMessage has been encrypted: "
@@ -33,22 +34,28 @@ decryptinput: .asciiz "\nEnter the message to decrypt (100 char max): "
 decryptoutput: .asciiz "\nMessage has been decrypted: "
 keyask: .asciiz "\nPlease enter a number for the shift key: "
 #shiftAmount: .byte 3		#no longer used
-inputBuffer: .space 101
+inputBuffer: .space 200
+resultMsg: .asciiz "\nThe result message is: "
+newTry: .asciiz "\n\nWould you like to try again?\n(Y)Yes (N)No (K)New key shift \n\nEnter 'Y' or 'N' for your selection: "
 
 .text
+welcome: 
+	# Print welcome message
+	li $v0, 4
+	la $a0, welcomeMsg
+	syscall
 main:
-	
-	#print menu to user
+	# Print menu to user
 	li $v0, 4
 	la $a0, menu
 	syscall
 	
-	#print instruciton to user
+	# Print instruciton to user
 	li $v0, 4
 	la $a0, instruction
 	syscall
 	
-	#get user menu selection
+	# Get user menu selection
 	li $v0, 5
 	syscall
 	move $t7, $v0		#Storing the user menu input in $t7
@@ -63,24 +70,24 @@ main:
 
     
 invalid:
-	#print out invalid input
+	# Print out invalid input
 	li $v0, 4
 	la $a0, invalidInput
 	syscall
 	
 	j main
-	#reprompt the user for valid input
+	# Reprompt the user for valid input
     
 encrypt:
 	# Print encryptinput msg
     	li $v0, 4		#print string
-    	la $a0, encryptinput	#load msg1 address
+    	la $a0, encryptinput	#load encryptinput address
     	syscall
     
     	# Read user input
     	li $v0, 8		#read string input
     	la $a0, inputBuffer	#store into inputBuffer
-    	li $a1, 100		#read 100 chars max
+    	li $a1, 199		#read 100 chars max
    	syscall
     
     	# Ask for shift key
@@ -118,9 +125,10 @@ decrypt:
     	# Read user input
     	li $v0, 8		#read string input
     	la $a0, inputBuffer	#store into inputBuffer
-    	li $a1, 100		#read 100 chars max
+    	li $a1, 199		#read 100 chars max
    	syscall
-    
+   	
+decrypt_key:
     	# Ask for shift key
     	li $v0, 4
     	la $a0, keyask
@@ -141,7 +149,7 @@ decrypt_loop:
     	lb $t2, ($t0)   # Load the current character into $t2
     	beq $t2, $zero, print_result  # If end of string is reached, print result
     
-    	addu $t2, $t2, $t1  # Add the key to the character (shifts it)
+    	add $t2, $t2, $t1  # Add the key to the character (shifts it)
     
     	sb $t2, ($t0)   # Store the encrypted character back into result
     	addi $t0, $t0, 1   # Increment address to the next character
@@ -150,9 +158,39 @@ decrypt_loop:
 print_result:
     	# Print the encrypted/decrypted message
     	li $v0, 4
+    	la $a0, resultMsg
+    	syscall
+    	
+    	# Print the inputBuffer
+    	li $v0, 4
     	la $a0, inputBuffer
     	syscall
-    	j end
+    	j loopAgain
+    	
+#loopAgain to ask if user would like to try again or quit	
+loopAgain:
+	li $v0, 4
+	la $a0, newTry
+	syscall
+	
+	#Get user input's character
+	li $v0, 12
+	syscall
+	
+	move $t0, $v0 #move to register $t0
+	
+	#load immediate 'y' to $t1 and 'n' to $t2 for comparation
+	li $t1, 'y'
+	li $t2, 'n'
+	li $t3, 'k'
+	
+	#if $t1 is equal to $t0 as 'y', continue the program
+	beq $t1, $t0, main
+	
+	#if $t2 is equal to $t0 as 'n', end the program
+	beq $t2, $t0, end
+	
+	beq $t3, $t0, decrypt_key
     
 end:
 	exit
