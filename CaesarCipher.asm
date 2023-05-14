@@ -36,7 +36,7 @@ keyask: .asciiz "\nPlease enter a number for the shift key: "
 #shiftAmount: .byte 3		#no longer used
 inputBuffer: .space 200
 resultMsg: .asciiz "\nThe result message is: "
-newTry: .asciiz "\n\nWould you like to try again?\n(Y)Yes (N)No (K)New key shift \n\nEnter 'Y' or 'N' for your selection: "
+newTry: .asciiz "\n\nWould you like to try again?\n(Y)Yes (N)No\n\nEnter 'Y' or 'N'for your selection: "
 
 .text
 welcome: 
@@ -110,7 +110,7 @@ encrypt_loop:
     	lb $t2, ($t0)   # Load the current character into $t2
     	beq $t2, $zero, print_result  # If end of string is reached, print result
     
-    	subu $t2, $t2, $t1  # Add the key to the character (shifts it)
+    	add $t2, $t2, $t1  # Add the key to the character (shifts it)
     
     	sb $t2, ($t0)   # Store the encrypted character back into result
     	addi $t0, $t0, 1   # Increment address to the next character
@@ -149,7 +149,7 @@ decrypt_loop:
     	lb $t2, ($t0)   # Load the current character into $t2
     	beq $t2, $zero, print_result  # If end of string is reached, print result
     
-    	add $t2, $t2, $t1  # Add the key to the character (shifts it)
+    	subu $t2, $t2, $t1  # Add the key to the character (shifts it)
     
     	sb $t2, ($t0)   # Store the encrypted character back into result
     	addi $t0, $t0, 1   # Increment address to the next character
@@ -179,10 +179,9 @@ loopAgain:
 	
 	move $t0, $v0 #move to register $t0
 	
-	#load immediate 'y' to $t1 and 'n' to $t2 for comparation
+	#load immediate 'y' to $t1 and  'n' to $t2 for comparation
 	li $t1, 'y'
 	li $t2, 'n'
-	li $t3, 'k'
 	
 	#if $t1 is equal to $t0 as 'y', continue the program
 	beq $t1, $t0, main
@@ -190,7 +189,6 @@ loopAgain:
 	#if $t2 is equal to $t0 as 'n', end the program
 	beq $t2, $t0, end
 	
-	beq $t3, $t0, decrypt_key
     
 end:
 	exit
